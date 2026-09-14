@@ -1,4 +1,5 @@
 import { AppShell, useCurrentView } from "@/components/AppShell";
+import { ChecklistGlyph } from "@/components/ChecklistGlyph";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -40,7 +41,6 @@ import { useAuth } from "@/hooks/use-auth";
 import {
   CHECKLISTS,
   CHECKLIST_ORDER,
-  checklistIcon,
   checklistLabel,
   type ChecklistField,
 } from "@/lib/checklists";
@@ -54,8 +54,11 @@ import {
   CheckCircle2,
   ClipboardCheck,
   Loader2,
+  MoonStar,
   Save,
   ShieldAlert,
+  Sun,
+  Sunrise,
   TriangleAlert,
 } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -68,6 +71,7 @@ function HomeView({ user }: { user: ReturnType<typeof useAuth>["user"] }) {
   const now = useNow(30_000);
   const poste = currentPoste(now);
   const meta = POSTE_META[poste];
+  const PosteIcon = poste === "nuit" ? MoonStar : poste === "matin" ? Sunrise : Sun;
 
   const openAnomalies = useQuery(api.anomalies.openCount, {});
 
@@ -106,7 +110,9 @@ function HomeView({ user }: { user: ReturnType<typeof useAuth>["user"] }) {
             </CardDescription>
           </CardHeader>
           <CardContent className="flex items-center gap-3">
-            <span className="text-2xl">{meta.emoji}</span>
+            <span className="grid size-10 place-items-center rounded-full bg-primary/10">
+              <PosteIcon className="size-5 text-primary" />
+            </span>
             <span className="font-medium">{meta.label}</span>
           </CardContent>
         </Card>
@@ -134,9 +140,11 @@ function HomeView({ user }: { user: ReturnType<typeof useAuth>["user"] }) {
             <Link
               key={id}
               to={`/dashboard/checklist/${id}`}
-              className="card-soft group relative flex flex-col gap-3 p-5 transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-lg"
+              className="card-soft group relative flex flex-col gap-3 p-5 transition-colors hover:border-primary/40"
             >
-              <span className="text-3xl">{c.icon}</span>
+              <span className="grid size-10 place-items-center rounded-lg bg-primary/10 text-primary">
+                <ChecklistGlyph id={c.id} className="size-5" />
+              </span>
               <h3 className="font-display text-base font-semibold">{c.title}</h3>
               <p className="text-sm text-muted-foreground">{c.subtitle}</p>
               <span className="mt-auto inline-flex items-center gap-1.5 pt-2 text-sm font-medium text-primary">
@@ -251,7 +259,7 @@ function ChecklistForm({ id }: { id: string }) {
           ← Tableau de bord
         </Link>
         <h1 className="mt-1 flex items-center gap-3 font-display text-3xl font-bold tracking-tight">
-          <span>{def.icon}</span> {def.title}
+          <ChecklistGlyph id={id} className="size-7 text-primary" /> {def.title}
         </h1>
         <p className="mt-1 text-muted-foreground">{def.subtitle}</p>
       </div>
@@ -419,7 +427,7 @@ function HistoryView() {
               <SelectItem value="all">Toutes les check-lists</SelectItem>
               {CHECKLIST_ORDER.map((id) => (
                 <SelectItem key={id} value={id}>
-                  {checklistIcon(id)} {CHECKLISTS[id].title}
+                  {CHECKLISTS[id].title}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -476,7 +484,10 @@ function HistoryView() {
                     })}
                   </TableCell>
                   <TableCell className="whitespace-nowrap font-medium">
-                    {checklistIcon(e.checklistId)} {checklistLabel(e.checklistId)}
+                    <span className="inline-flex items-center gap-2">
+                      <ChecklistGlyph id={e.checklistId} className="size-4 text-muted-foreground" />
+                      {checklistLabel(e.checklistId)}
+                    </span>
                   </TableCell>
                   <TableCell className="whitespace-nowrap capitalize">
                     {e.poste}
@@ -519,8 +530,9 @@ function DetailsDialog({ entry }: { entry: EntryDoc }) {
       </DialogTrigger>
       <DialogContent className="max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>
-            {checklistIcon(entry.checklistId)} {checklistLabel(entry.checklistId)}
+          <DialogTitle className="flex items-center gap-2">
+            <ChecklistGlyph id={entry.checklistId} className="size-4 text-primary" />
+            {checklistLabel(entry.checklistId)}
           </DialogTitle>
           <DialogDescription>
             {new Date(entry.createdAt).toLocaleString("fr-FR")} — Poste{" "}
@@ -564,10 +576,23 @@ type AnomalieDoc = {
 };
 
 const STATUS_META: Record<string, { label: string; cls: string }> = {
-  ouverte: { label: "🔴 Ouverte", cls: "bg-destructive/15 text-destructive" },
-  "en cours": { label: "🟠 En cours", cls: "bg-warning/15 text-warning" },
-  resolue: { label: "🟢 Résolue", cls: "bg-success/15 text-success" },
+  ouverte: { label: "Ouverte", cls: "bg-destructive/15 text-destructive" },
+  "en cours": { label: "En cours", cls: "bg-warning/15 text-warning" },
+  resolue: { label: "Résolue", cls: "bg-success/15 text-success" },
 };
+
+/** Quiet colored dot for a status/priority value. */
+function StatusDot({ tone }: { tone: "error" | "warning" | "success" | "muted" }) {
+  const cls =
+    tone === "error"
+      ? "bg-destructive"
+      : tone === "warning"
+        ? "bg-warning"
+        : tone === "success"
+          ? "bg-success"
+          : "bg-muted-foreground/40";
+  return <span className={`inline-block size-2 shrink-0 rounded-full ${cls}`} />;
+}
 
 const PRIORITY_CLS: Record<string, string> = {
   Critique: "text-destructive font-semibold",
@@ -657,10 +682,10 @@ function AnomaliesView() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">— Générale —</SelectItem>
+                  <SelectItem value="none">Générale</SelectItem>
                   {CHECKLIST_ORDER.map((id) => (
                     <SelectItem key={id} value={id}>
-                      {checklistIcon(id)} {CHECKLISTS[id].title}
+                      {CHECKLISTS[id].title}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -708,9 +733,9 @@ function AnomaliesView() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Toutes</SelectItem>
-            <SelectItem value="ouverte">🔴 Ouvertes</SelectItem>
-            <SelectItem value="en cours">🟠 En cours</SelectItem>
-            <SelectItem value="resolue">🟢 Résolues</SelectItem>
+            <SelectItem value="ouverte">Ouvertes</SelectItem>
+            <SelectItem value="en cours">En cours</SelectItem>
+            <SelectItem value="resolue">Résolues</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -739,7 +764,7 @@ function AnomaliesView() {
             ) : rows.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={8} className="py-10 text-center text-muted-foreground">
-                  Aucune anomalie. 🎉
+                  Aucune anomalie pour le moment.
                 </TableCell>
               </TableRow>
             ) : (
@@ -762,13 +787,14 @@ function AnomaliesView() {
                       ) : null}
                     </TableCell>
                     <TableCell className="whitespace-nowrap">
-                      {a.checklistId ? checklistLabel(a.checklistId) : "— Générale —"}
+                      {a.checklistId ? checklistLabel(a.checklistId) : "Générale"}
                     </TableCell>
                     <TableCell className={PRIORITY_CLS[a.priority] ?? ""}>
                       {a.priority}
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline" className={st.cls}>
+                      <Badge variant="outline" className="gap-1.5 border-transparent font-medium">
+                        <StatusDot tone={a.status === "ouverte" ? "error" : a.status === "en cours" ? "warning" : "success"} />
                         {st.label}
                       </Badge>
                     </TableCell>
@@ -785,7 +811,7 @@ function AnomaliesView() {
                           variant="outline"
                           onClick={() => setStatus({ id: a._id as Id<"anomalies">, status: "en cours" })}
                         >
-                          🔧 En cours
+                          Prendre en charge
                         </Button>
                       ) : a.status === "en cours" ? (
                         <Button
@@ -794,7 +820,7 @@ function AnomaliesView() {
                           className="text-success"
                           onClick={() => setStatus({ id: a._id as Id<"anomalies">, status: "resolue" })}
                         >
-                          ✅ Résoudre
+                          Marquer résolue
                         </Button>
                       ) : (
                         <CheckCircle2 className="size-4 text-success" />

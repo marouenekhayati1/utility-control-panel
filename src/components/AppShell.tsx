@@ -1,3 +1,4 @@
+import { ChecklistGlyph } from "@/components/ChecklistGlyph";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,7 +29,9 @@ import {
   LogOut,
   Menu,
   Moon,
+  MoonStar,
   Sun,
+  Sunrise,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
@@ -89,7 +92,7 @@ function NavLinks({
                   : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
               }`}
             >
-              {item(active, <span className="text-base leading-none">{c.icon}</span>, c.title)}
+              {item(active, <ChecklistGlyph id={c.id} className="size-4" />, c.title)}
             </Link>
           );
         })}
@@ -147,6 +150,7 @@ export function AppShell({
 
   const poste = useMemo(() => currentPoste(now), [now]);
   const meta = POSTE_META[poste];
+  const PosteIcon = poste === "nuit" ? MoonStar : poste === "matin" ? Sunrise : Sun;
 
   const handleSignOut = async () => {
     await signOut();
@@ -195,10 +199,11 @@ export function AppShell({
           <div className="flex items-center gap-2">
             <Badge
               variant="secondary"
-              className="hidden gap-1.5 rounded-full px-3 py-1 text-xs font-semibold sm:inline-flex"
+              className="hidden gap-1.5 rounded-full px-3 py-1 text-xs font-medium sm:inline-flex"
             >
-              <span>{meta.emoji}</span>
-              <span className="text-muted-foreground">Poste :</span> {meta.label}
+              <PosteIcon className="size-3.5 text-primary" />
+              <span className="text-muted-foreground">Poste</span>
+              {meta.label}
             </Badge>
             <span className="hidden text-xs tabular-nums text-muted-foreground md:inline">
               {now.toLocaleDateString("fr-FR")}{" "}

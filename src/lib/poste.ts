@@ -10,10 +10,10 @@ export function currentPoste(date = new Date()): Poste {
   return "apres-midi";
 }
 
-export const POSTE_META: Record<Poste, { label: string; emoji: string }> = {
-  nuit: { label: "Nuit", emoji: "🌙" },
-  matin: { label: "Matin", emoji: "🌅" },
-  "apres-midi": { label: "Après-midi", emoji: "☀️" },
+export const POSTE_META: Record<Poste, { label: string }> = {
+  nuit: { label: "Nuit" },
+  matin: { label: "Matin" },
+  "apres-midi": { label: "Après-midi" },
 };
 
 /** Tick on an interval — returns the current date, re-rendering the caller. */

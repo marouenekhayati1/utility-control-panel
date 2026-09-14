@@ -7,7 +7,6 @@ export type ChecklistField =
 
 export interface ChecklistDef {
   id: string;
-  icon: string;
   title: string;
   subtitle: string;
   fields: ChecklistField[];
@@ -16,7 +15,6 @@ export interface ChecklistDef {
 export const CHECKLISTS: Record<string, ChecklistDef> = {
   water: {
     id: "water",
-    icon: "💧",
     title: "Traitement d'eau",
     subtitle: "Adoucisseur, filtration, chlore et conductivité",
     fields: [
@@ -34,7 +32,6 @@ export const CHECKLISTS: Record<string, ChecklistDef> = {
   },
   surchauffee: {
     id: "surchauffee",
-    icon: "🔥",
     title: "Eau surchauffée",
     subtitle: "Réseau haute température, pressions et températures",
     fields: [
@@ -50,7 +47,6 @@ export const CHECKLISTS: Record<string, ChecklistDef> = {
   },
   vapeur: {
     id: "vapeur",
-    icon: "♨️",
     title: "Chaudière vapeur",
     subtitle: "Production de vapeur, niveaux et purges",
     fields: [
@@ -66,7 +62,6 @@ export const CHECKLISTS: Record<string, ChecklistDef> = {
   },
   vide: {
     id: "vide",
-    icon: "🔧",
     title: "Pompe à vide",
     subtitle: "Dépression, huile et refroidissement",
     fields: [
@@ -81,7 +76,6 @@ export const CHECKLISTS: Record<string, ChecklistDef> = {
   },
   compresseurs: {
     id: "compresseurs",
-    icon: "💨",
     title: "Compresseurs",
     subtitle: "Air comprimé, sécheur et condensats",
     fields: [
@@ -97,7 +91,6 @@ export const CHECKLISTS: Record<string, ChecklistDef> = {
   },
   glacee: {
     id: "glacee",
-    icon: "❄️",
     title: "Eau glacée",
     subtitle: "Groupes froids, départs/retours et pressions",
     fields: [
@@ -113,7 +106,6 @@ export const CHECKLISTS: Record<string, ChecklistDef> = {
   },
   thermo: {
     id: "thermo",
-    icon: "🌡️",
     title: "Thermoventilation",
     subtitle: "CTA, filtres, températures et régulation",
     fields: [
@@ -128,7 +120,6 @@ export const CHECKLISTS: Record<string, ChecklistDef> = {
   },
   groupes: {
     id: "groupes",
-    icon: "⚡",
     title: "Groupes électrogènes",
     subtitle: "GE, niveau gasoil, batteries et mode veille",
     fields: [
@@ -143,7 +134,6 @@ export const CHECKLISTS: Record<string, ChecklistDef> = {
   },
   osmose: {
     id: "osmose",
-    icon: "💠",
     title: "Station d'osmose",
     subtitle: "Osmose inverse, perméat et concentrat",
     fields: [
@@ -172,11 +162,6 @@ export const CHECKLIST_ORDER = [
 ] as const;
 
 export function checklistLabel(id: string | null | undefined): string {
-  if (!id) return "— Générale —";
+  if (!id) return "Générale";
   return CHECKLISTS[id]?.title ?? id;
-}
-
-export function checklistIcon(id: string | null | undefined): string {
-  if (!id) return "📋";
-  return CHECKLISTS[id]?.icon ?? "📋";
 }
